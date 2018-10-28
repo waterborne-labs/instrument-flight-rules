@@ -24,6 +24,11 @@ source:
 - name: uri
   # whether this source parameter must be defined by the user
   required: true
+  # Use `schema` to define the value type for this parameter. This uses JSON Schema.
+  # https://json-schema.org/understanding-json-schema/reference/index.html
+  # By default, we assume everything is a string. So this is optional.
+  schema:
+    type: string
   # an example value
   example: git@github.com:concourse/git-resource.git
 - name: branch

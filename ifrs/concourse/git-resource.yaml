@@ -1,0 +1,109 @@
+version: 1
+source:
+- name: uri
+  required: true
+  example: git@github.com:concourse/git-resource.git
+  description: The location of the repository.
+- name: branch
+  required: false
+  example: master
+  # describe how this source parameter works, and even provide additional examples.
+  description: |
+    The branch to track. This is optional if the resource is only used in get steps; however, it is required when used in a put step.
+    If unset for get, the repository's default branch is used; usually master but could be different.
+- name: private_key
+  required: false
+  example: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEowIBAAKCAQEAtCS10/f7W7lkQaSgD/mVeaSOvSF9ql4hf/zfMwfVGgHWjj+W
+    <Lots more text>
+    DWiJL+OFeg9kawcUL6hQ8JeXPhlImG6RTUffma9+iGQyyBMCGd1l
+    -----END RSA PRIVATE KEY-----
+  description: Private key to use when pulling/pushing
+- name: username
+  required: false
+  example: my-user
+  description: |
+    Username for HTTP(S) auth when pulling/pushing.
+    This is needed when only HTTP/HTTPS protocol for git is available (which does not support private key auth) and auth is required.
+- name: password
+  required: false
+  example: aSOvSF9ql4hf
+  description: Password for HTTP(S) auth when pulling/pushing.
+- name: paths
+  required: false
+  # Here's an example where the value type is not a string
+  schema:
+    type: array
+    items:
+      type: string
+  # Because the value type is an array, we specify the example as an array too!
+  example:
+  - "*.txt"
+  - README.md
+  description: If specified (as a list of glob patterns), only changes to the specified files will yield new versions from check.
+- name: ignore_paths
+  required: false
+  schema:
+    type: array
+    items:
+      type: string
+  example:
+  - logs/**/*
+  description: |
+    The inverse of paths; changes to the specified files are ignored.
+
+    Note that if you want to push commits that change these files via a put,
+    the commit will still be "detected", as check and put both introduce versions.
+
+    To avoid this you should define a second resource that you use for commits that change files
+    that you don't want to feed back into your pipeline - think of one as read-only (with ignore_paths) and
+    one as write-only (which shouldn't need it).
+- name: skip_ssl_verification
+  required: false
+  schema:
+    type: boolean
+  example: true
+  description: Skips git ssl verification by exporting GIT_SSL_NO_VERIFY=true
+- name: tag_filter
+  required: false
+  example: "*foo*"
+  description: |
+    If specified, the resource will only detect commits that have a tag matching the expression
+    that have been made against the `branch`. Patterns are glob(7) compatible (as in, bash compatible).
+- name: git_config
+  required: false
+  schema:
+    type: array
+    items:
+      type: object
+      properties:
+        name: { type: string }
+        value: { type: string }
+  description: If specified as (list of pairs name and value) it will configure git global options, setting each name with each value.
+
+params:
+  get:
+  - name: depth
+    required: false
+    schema:
+      type: integer
+    example: 1
+    description: If a positive integer is given, shallow clone the repository using the --depth option.
+  put:
+  - name: repository
+    required: true
+    # this parameter needs a path to something, most likely another resource or task output
+    path_input: true
+    example: source
+    description: The path of the repository to push to the source.
+
+outputs:
+# this output is special, in that it should describe the contents of the directory created from a `get`
+- path: /
+  description: The cloned repo
+# if you have specific files that always exist inside the root directory, add additional outputs, with the name being the path to that file. You should exclude the leading `/` in the path
+- name: .git/committer
+  example_contents: foo@bar.com
+  description: |
+    For committer notification on failed builds. This special file .git/committer which is populated with the email address of the author of the last commit. This can be used together with an email resource like mdomke/concourse-email-resource to notify the committer in an on_failure step.
