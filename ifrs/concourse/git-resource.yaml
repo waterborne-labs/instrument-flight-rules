@@ -82,21 +82,20 @@ source:
         value: { type: string }
   description: If specified as (list of pairs name and value) it will configure git global options, setting each name with each value.
 
-params:
-  get:
-  - name: depth
-    required: false
-    schema:
-      type: integer
-    example: 1
-    description: If a positive integer is given, shallow clone the repository using the --depth option.
-  put:
-  - name: repository
-    required: true
-    # this parameter needs a path to something, most likely another resource or task output
-    path_input: true
-    example: source
-    description: The path of the repository to push to the source.
+get:
+- name: depth
+  required: false
+  schema:
+    type: integer
+  example: 1
+  description: If a positive integer is given, shallow clone the repository using the --depth option.
+put:
+- name: repository
+  required: true
+  # this parameter needs a path to something, most likely another resource or task output
+  path_input: true
+  example: source
+  description: The path of the repository to push to the source.
 
 outputs:
 # this output is special, in that it should describe the contents of the directory created from a `get`
