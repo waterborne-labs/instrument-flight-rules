@@ -32,6 +32,7 @@ source:
   # an example value
   example: git@github.com:concourse/git-resource.git
 - name: branch
+  # `required` is optional, and defaults to `false`.
   required: false
   example: master
   # describe how this source parameter works, and even provide additional examples.
@@ -61,3 +62,7 @@ outputs:
   description: |
     For committer notification on failed builds. This special file .git/committer which is populated with the email address of the author of the last commit. This can be used together with an email resource like mdomke/concourse-email-resource to notify the committer in an on_failure step.
 ```
+
+## IFRS directory
+
+Organized by git user/org directory, then `<repo>.yaml`. 

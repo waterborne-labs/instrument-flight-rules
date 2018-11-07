@@ -1,4 +1,4 @@
-version: 1
+version: "1"
 source:
 - name: uri
   required: true
@@ -81,6 +81,52 @@ source:
         name: { type: string }
         value: { type: string }
   description: If specified as (list of pairs name and value) it will configure git global options, setting each name with each value.
+- name: disable_ci_skip
+  required: false
+  schema:
+    type: boolean
+  description: Allows for commits that have been labeled with `[ci skip]` or `[skip ci]` previously to be discovered by the resource.
+- name: commit_verification_keys
+  required: false
+  schema:
+    type: array
+    items:
+      type: string
+  description: Array of GPG public keys that the resource will check against to verify the commit (details below).
+- name: commit_verification_key_ids
+  required: false
+  schema:
+    type: array
+    items:
+      type: string
+  description: |
+    Array of GPG public key ids that the resource will check against to verify the commit (details below).
+    The corresponding keys will be fetched from the key server specified in gpg_keyserver.
+    The ids can be short id, long id or fingerprint.
+- name: gpg_keyserver
+  required: false
+  description: GPG keyserver to download the public keys from. Defaults to hkp:///keys.gnupg.net/.
+- name: git_crypt_key
+  required: false
+  description: |
+    Base64 encoded git-crypt key. Setting this will unlock / decrypt the repository with git-crypt.
+    To get the key simply execute git-crypt export-key -- - | base64 in an encrypted repository.
+- name: https_tunnel
+  required: false
+  schema:
+    type: object
+    properties:
+      proxy_host: { type: string }
+      proxy_port: { type: string }
+      proxy_user: { type: string }
+      proxy_password: { type: string }
+  description: |
+    Information about an HTTPS proxy that will be used to tunnel SSH-based git commands over. Has the following sub-properties
+    - proxy_host: Required. The host name or IP of the proxy server
+    - proxy_port: Required. The proxy server's listening port
+    - proxy_user: Optional. If the proxy requires authentication, use this username
+    - proxy_password: Optional. If the proxy requires authenticat, use this password
+      
 
 get:
 - name: depth
@@ -89,6 +135,52 @@ get:
     type: integer
   example: 1
   description: If a positive integer is given, shallow clone the repository using the --depth option.
+- name: submodules
+  required: false
+  schema:
+    anyOf:
+    - type: string
+      pattern: "^none$"
+    - type: string
+      pattern: "^all$"
+    - type: array
+      items:
+        type: string
+  description: |
+    If the value is string:`none`, submodules will not be fetched. 
+    If the value is string:`all` or if this parameter is omitted, all submodules will be fetched.
+    If specified as a list of paths, only the given paths will be fetched.
+- name: submodule_recursive
+  required: false
+  schema:
+    type: boolean
+  description: |
+    If false, a flat submodules checkout is performed.
+    If not specified, or if true is explicitly specified, a recursive checkout is performed.
+- name: submodule_remote
+  required: false
+  schema:
+    type: boolean
+  description: |
+    If true, the submodules are checked out for the specified remote branch specified in the .gitmodules file of the repository. 
+    If not specified, or if false is explicitly specified, the tracked sub-module revision of the repository is used to check out the submodules.
+- name: disable_git_lfs
+  required: false
+  schema:
+    type: boolean
+  description: If true, will not fetch Git LFS files.
+- name: clean_tags
+  required: false
+  schema:
+    type: boolean
+  description: |
+    If true all incoming tags will be deleted. 
+    This is useful if you want to push tags, but have reasonable doubts that the tags cached with the resource are outdated. 
+    The default value is false.
+- name: short_ref_format
+  required: false
+  description: When populating .git/short_ref use this printf format. Defaults to %s.
+
 put:
 - name: repository
   required: true
@@ -98,11 +190,24 @@ put:
   description: The path of the repository to push to the source.
 
 outputs:
-# this output is special, in that it should describe the contents of the directory created from a `get`
-- path: /
-  description: The cloned repo
-# if you have specific files that always exist inside the root directory, add additional outputs, with the name being the path to that file. You should exclude the leading `/` in the path
-- name: .git/committer
-  example_contents: foo@bar.com
-  description: |
-    For committer notification on failed builds. This special file .git/committer which is populated with the email address of the author of the last commit. This can be used together with an email resource like mdomke/concourse-email-resource to notify the committer in an on_failure step.
+  root:
+    description: The cloned repo
+  paths:
+  # if you have specific files that always exist inside the root directory, add additional outputs, with the name being the path to that file. You should exclude the leading `/` in the path
+  - name: .git/committer
+    example_contents: foo@bar.com
+    description: |
+        For committer notification on failed builds. 
+        This special file .git/committer which is populated with the email address of the author of the last commit. 
+        This can be used together with an email resource like mdomke/concourse-email-resource to notify the committer in an on_failure step.
+  - name: .git/ref
+    example: 832e76a9899f560a90ffd62ae2ce83bbeff58f54
+    description: |
+        Version reference detected and checked out. 
+        It will usually contain the commit SHA-1 ref, but also the detected tag name when using tag_filter.
+  - name: .git/short_ref
+    example: 832e76a
+    description: Short (first seven characters) of the .git/ref. Can be templated with short_ref_format parameter.
+  - name: .git/commit_message
+    example: this is a commit message
+    description: For publishing the Git commit message on successful builds.

@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "definitions": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "required": { "type": "boolean" },
+        "example": { "type": "string" },
+        "description": { "type": "string" },
+        "schema": { 
+          "$ref":"http://json-schema.org/schema#",
+          "description":"A JSON Schema."
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "example_contents": { "type": "string" }
+      },
+      "required": [ "description", "example_contents" ]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "version": { "type": "string" },
+    "source": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/input"
+      }
+    },
+    "get": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/input"
+      }
+    },
+    "put": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/input"
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "$ref": "#/definitions/output"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              { "$ref": "#/definitions/output" },
+              {
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": [ "name" ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "version",
+    "source",
+    "get",
+    "put",
+    "outputs"
+  ]
+}
