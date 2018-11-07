@@ -6,9 +6,12 @@
       "properties": {
         "name": { "type": "string" },
         "required": { "type": "boolean" },
-        "example": { "type": "string" },
+        "example": {
+          "description": "This type should match that of the schema provided in #input_schame, but it appears a 2-pass validation like this isn't possible"
+        },
         "description": { "type": "string" },
-        "schema": { 
+        "schema": {
+          "#id": "#input_schema",
           "$ref":"http://json-schema.org/schema#",
           "description":"A JSON Schema."
         }
@@ -21,8 +24,7 @@
     "output": {
       "type": "object",
       "properties": {
-        "description": { "type": "string" },
-        "example_contents": { "type": "string" }
+        "description": { "type": "string" }
       },
       "required": [ "description", "example_contents" ]
     }
@@ -62,7 +64,8 @@
               { "$ref": "#/definitions/output" },
               {
                 "properties": {
-                  "name": { "type": "string" }
+                  "name": { "type": "string" },
+                  "example_contents": { "type": "string" }
                 },
                 "required": [ "name" ]
               }

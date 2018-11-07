@@ -192,6 +192,7 @@ put:
 outputs:
   root:
     description: The cloned repo
+    example_contents:
   paths:
   # if you have specific files that always exist inside the root directory, add additional outputs, with the name being the path to that file. You should exclude the leading `/` in the path
   - name: .git/committer
@@ -201,13 +202,13 @@ outputs:
         This special file .git/committer which is populated with the email address of the author of the last commit. 
         This can be used together with an email resource like mdomke/concourse-email-resource to notify the committer in an on_failure step.
   - name: .git/ref
-    example: 832e76a9899f560a90ffd62ae2ce83bbeff58f54
+    example_contents: 832e76a9899f560a90ffd62ae2ce83bbeff58f54
     description: |
         Version reference detected and checked out. 
         It will usually contain the commit SHA-1 ref, but also the detected tag name when using tag_filter.
   - name: .git/short_ref
-    example: 832e76a
+    example_contents: 832e76a
     description: Short (first seven characters) of the .git/ref. Can be templated with short_ref_format parameter.
   - name: .git/commit_message
-    example: this is a commit message
+    example_contents: this is a commit message
     description: For publishing the Git commit message on successful builds.

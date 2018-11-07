@@ -15,4 +15,4 @@ WORKDIR /
 COPY --from=build /ifr /usr/local/bin/ifr
 COPY --from=build /go/src/github.com/waterborne-labs/instrument-flight-rules/ifrs /ifrs
 
-ENTRYPOINT ["/usr/local/bin/ifr"]
+ENTRYPOINT ["ifr"]
